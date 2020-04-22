@@ -44,6 +44,12 @@ if config.USE_GPU and torch.cuda.is_available():
 else:
     device = torch.device("cpu:0")
     print('Warning! Using CPU.')
+
+...
+model = model.to(device)
+images = images.to(device)
+labels = labels.to(device)
+...
 ```
 
 
