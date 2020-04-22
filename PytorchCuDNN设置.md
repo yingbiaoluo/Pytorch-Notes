@@ -14,27 +14,25 @@ CUDA (ComputeUnified Device Architecture)，是显卡厂商NVIDIA推出的运算
 
 NVIDIA cuDNN是用于深度神经网络的GPU加速库。它强调性能、易用性和低内存开销。NVIDIA cuDNN可以集成到更高级别的机器学习框架中，如谷歌的Tensorflow、加州大学伯克利分校的流行caffe软件。简单的插入式设计可以让开发人员专注于设计和实现神经网络模型，而不是简单调整性能，同时还可以在GPU上实现高性能现代并行计算。
 
-CuDNN使用非确定性算法，并且可以使用torch.backends.cudnn.enabled = False来进行禁用。
+CuDNN使用非确定性算法，并且可以使用`torch.backends.cudnn.enabled = False`来进行禁用。
 
 如果设置为`torch.backends.cudnn.enabled =True`，说明设置为使用非确定性算法。
 
-然后再设置：  `torch.backends.cudnn.benchmark = true`
-
-那么CuDNN使用的非确定性算法就会自动寻找最适合当前配置的高效算法，来达到优化运行效率的问题。
+然后再设置：  `torch.backends.cudnn.benchmark = True`，那么CuDNN使用的非确定性算法就会自动寻找最适合当前配置的高效算法，来达到优化运行效率的问题。
 
 一般来讲，应该遵循以下准则：
 
-1. 如果网络的输入数据维度或类型上变化不大，设置 torch.backends.cudnn.benchmark = true 可以增加运行效率；
+1. 如果网络的输入数据维度或类型上变化不大，设置 torch.backends.cudnn.benchmark = True 可以增加运行效率；
 2. 如果网络的输入数据在每次 iteration 都变化的话，会导致 cnDNN 每次都会去寻找一遍最优配置，这样**反而会降低**运行效率
 
 ```python
 cudnn.enabled = config.CUDNN.ENABLED  # 设置为使用非确定性算法
 cudnn.benchmark = config.CUDNN.BENCHMARK  # 自动寻找最适合当前配置的高效算法，来达到优化运行效率的问题，当计算图不会改变的时候（每次输入形状相同，模型不改变）的情况下可以提高性能，反之则降低性能
-cudnn.deterministic = config.CUDNN.DETERMINISTIC  # CuDNN卷积使用确定性算法
+cudnn.deterministic = config.CUDNN.DETERMINISTIC  # cuDNN卷积使用确定性算法
 ```
 
 
 
 一些小技巧：
 
-1. 有时候可能是因为每次迭代都会引入点临时变量，会导致训练速度越来越慢，基本呈线性增长。开发人员还不清楚原因，但如果周期性的使用`torch.cuda.empty_cache()`的话就可以解决这个问题。这个命令是清除没用的临时变量的。
+1. 有时候可能是因为每次迭代都会引入点临时变量，会导致训练速度越来越慢，基本呈线性增长。开发人员还不清楚原因，但如果周期性的使用`torch.cuda.empty_cache()`的话就可以解决这个问题。这个命令是清除没用的临时变量的。torch.cuda.emptyCache()释放PyTorch的缓存分配器中的缓存内存块。当与其他进程共享GPU时特别有用。
