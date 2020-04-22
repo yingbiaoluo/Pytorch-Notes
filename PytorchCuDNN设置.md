@@ -25,10 +25,25 @@ CuDNN使用非确定性算法，并且可以使用`torch.backends.cudnn.enabled 
 1. 如果网络的输入数据维度或类型上变化不大，设置 torch.backends.cudnn.benchmark = True 可以增加运行效率；
 2. 如果网络的输入数据在每次 iteration 都变化的话，会导致 cnDNN 每次都会去寻找一遍最优配置，这样**反而会降低**运行效率
 
+
+
+代码加载程序前：
+
 ```python
-cudnn.enabled = config.CUDNN.ENABLED  # 设置为使用非确定性算法
-cudnn.benchmark = config.CUDNN.BENCHMARK  # 自动寻找最适合当前配置的高效算法，来达到优化运行效率的问题，当计算图不会改变的时候（每次输入形状相同，模型不改变）的情况下可以提高性能，反之则降低性能
-cudnn.deterministic = config.CUDNN.DETERMINISTIC  # cuDNN卷积使用确定性算法
+# get device and set cuDNN
+if config.USE_GPU and torch.cuda.is_available():
+    device = torch.device("cuda:{}".format(config.GPUID))
+    print('Using GPU: ', torch.cuda.get_device_name(0))
+    # cudnn
+    cudnn.enabled = config.CUDNN.ENABLED  # True设置为使用非确定性算法
+    cudnn.benchmark = config.CUDNN.BENCHMARK
+    # 自动寻找最适合当前配置的高效算法，来达到优化运行效率的问题
+    # 当计算图不会改变的时候（每次输入形状相同，模型不改变）的情况下可以提高性能，反之则降低性能
+    print('Using cudnn.benchmark')
+    cudnn.deterministic = config.CUDNN.DETERMINISTIC  # 卷积操作使用确定性算法，可复线
+else:
+    device = torch.device("cpu:0")
+    print('Warning! Using CPU.')
 ```
 
 
